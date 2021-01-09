@@ -21,7 +21,7 @@ There are no variables to overwrite, no functions to jump ... but we have to sta
 
 Notes: 
 
-1) IS VERY USEFULL THE BEFORE TEST THE SHELLCODE TRY WITH SOME INT 3 (0xce) OPCODES (breakpoint) to test if the injection works
+1) IS VERY USEFULL THE BEFORE TEST THE SHELLCODE TRY WITH SOME INT 3 (0xCC) OPCODES (breakpoint) to test if the injection works
 2) Is better to find shell code in internet (just search for a execve("/bin/bash", 0, 0))
 3) VERY IMPORTANT: launch the exploit like that (if the shellcode uses execve): >$ (python script ; cat) | ./stack5
 
