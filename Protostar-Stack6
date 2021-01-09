@@ -1,0 +1,58 @@
+For this one i had the same problem i had in stack5 ...
+
+But lets analyse the code:
+
+1) We can see there's a check is performed and the value returned can not start by '0xbf'
+2) If we inspect the memory (gdb command: info mappings) we can see that only the values from the stack start by '0xbf'
+3) So, IS NOT POSSIBLE TO RETURN A VALUE FROM THE STACK
+4) But is possible to do some tricks, the address of the opcode ret stayment doesn't start by '0xbf'
+5) So, is possible to overwrite the value of the return address (after ebp) and put in this address the value from
+	the ret opcode stayment, that will jump to itseft and pop the address (will perform a NOP and decrement the stack by one).
+	Using this method is possible to skip the ret opcode stayment. (This is called a gadget in return oriented programing (there are a lot of gadgets))
+6) Now just if we place the shellcode after the return address is possible to execute it.
+7) BUT a lot of systems have stack execution prevention, that prevention never allows to have a memory page that is able to be
+	writed and executed (W ^ X in wikipedia).
+8) But is actually possible to use tecniques like Ret-2-libc to never execute shellcode but also gain privileges.
+9) Ret-2-libc consist on return a libc function (like system!! and have a bash), to perform this attack the address of system
+	and of its parameter "/bin/sh" are needed.
+10) To execute system we need the stack to look like this:
+
+	mov ptr [esp], 0x09080706	# address of "/bin/sh"
+	call system
+
+	| ...					|
+	| ?????					|
+	| ?????					|
+	| ret addr of system	|
+	| 0x09080706			|
+
+	Obiouslly the "call system" will be never performed but it can be simulated
+	putting on the stack a return address and then "/bin/sh". The call to system
+	can be just performed returning the address of system in the stack6's getpath function.
+
+	So, the idea is just overwrite the stack with some padding, then overwrite the return address to system
+	but make sure we have to control of the stack, for be sure the ret must be controled. So, after the
+	system call some random address (who will segfault can be overwritted) and after that address place the "/bin/sh" string address.
+
+	| padding ... 							|
+	| ret of getpath jump to system addr	|
+	| ret addr of system					|
+	| addr of "/bin/sh" (0x09080706 previously) |
+
+	And with just that is possible to gain control without using execve in a shellcode (without execute)
+
+11) For find "/bin/sh" for example: strings -a -t x /lib/libc.2.11.2.so | grep "/bin/sh"
+
+The exploit script must look like :
+
+import struct
+
+padding = "A"*64
+ret2libc = ***address of system*** (easy to find)
+ret = "A"*4		# will segfault if jumps into
+binsh = ***address of "bin/sh"***
+
+print padding+ret2libc+ret+binsh
+
+Note dont forget to execute like that: (python script ; cat) | ./stack6
+
