@@ -1,0 +1,31 @@
+This is like stack 3 but in this case the return address must be overwritten
+
+1) Seach the address of the target function
+2) Fill the stack with padding, fill esp ,and overwrite the return address
+3) End !
+
+I ve used this script
+
+import struct
+
+padding = "A"*64
+ebp = "A"*4
+ret = struct.pack("I", 0x080483f4) # convert string to integer
+print padding+ebp+ret
+
+Advanced explanations:
+
+While calling a function:
+1) Push the return addr on the stack
+2) Push ebp on the stack
+3) Push all the local stuff on the stack and ebp will point to the first element
+-----
+While returning from a function
+1) Move the value of esp to ebp ("delete" the stack frame, really not deleted just not pointed yet so overwrited later if needed)
+2) Pop ebp
+3) return (Ret is just jump to the address in the stack and pop this address)
+
+So for overwrite the return address we need to overwrite before all the stack pointed by esp, then ebp and then we are in the return address
+
+Note: This won't work in a modern systhem (I m just learning from the bottom) modern systems has ramdom stack address and buffer cookies to prevent
+stack overflow ('*** stack smashed ***' error is raised if the cookies is overwritten) but obiouslly this just make it more complex and interesting! 
