@@ -1,0 +1,29 @@
+Protostart old school hacking execices (search in google "exploit education")
+
+This tecniques won't work in current (2021) elf executables, those has ASLR and NX memory!
+
+This is the answer for stack0:
+
+1) Analyse the excutable with gdb and disassemble (set disassembly-flavour intel to get a nicer visual mode)
+2) We can see that gets is used, in the man we can check that gets is vulnarable to overflow
+3) If we know how the stack works or we just analyse esp (while program started with a breakpoint) we can observe that the value to overwrite is located aafter the 64bytes char array
+4) This one is pretty easy but i'll try to go in details
+5) In gdb we can use the following commands to have enought information to know what is going on (without knowlegde about the stack) while running the program:
+	- 1) Set a breakpoint in gets addr
+	- 2) set anouther breakpoint after gets addr
+	- 3) Use "define hook-stop"
+	- 4) Then hook "info registers"
+	- 5) And "x/24wx $esp" to examine 24 elems in the stack in hexa
+	- 6) And "x/2ì $eip" to examine the next 2 instructions
+	- 7) "end" to end the hook
+	- 8) Run the program and continue
+6) Test an input like "AAAAAAAAAAAAAAAAAA" (A are uaseful cause is 0x41 in hexa and they ar easy locable)
+7) Then examine the value to overwrite ("x/wx $esp+0x5c")
+8) Test differents leghts until the value is not 0
+9) Then pipe the value to stack 0 and is done!
+
+10) Now with just knowledge about the stack can the asm we could skip all that, with just diassembling stack0 we could know that we just need to overflow the 64bytes string to overwrite the desired value.
+So a more styled and faster solution could be:
+
+>$ python -c 'print "A"*65' | ./stack0
+
