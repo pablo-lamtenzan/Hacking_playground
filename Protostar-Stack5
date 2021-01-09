@@ -1,0 +1,41 @@
+For this one i know and understand how to do it but i still don't understand why 1990's gdb don't let me do this:
+1) Set a breakpoint to opcode ret
+2) Run < my_script
+
+In the step 2 my script is lost, anyway, i could insert the input manually but i have to work in a 1990's ubuntu machine
+this machine is only 1 terminal an is so bugged (no ssh conection avalaible, no resizable, no spliteable, no mouse, no copy-paste, no color ...)
+After trying to just insert my script in gdb for 3h i think is enough.
+
+So what we have to do to solve this ?
+
+There are no variables to overwrite, no functions to jump ... but we have to stack
+
+1) Find where esp points in the ret opcode stayment (is outside the stack frame)
+2) Apply paddig until the return address and overwrite the return address with the value of esp in the ret opcode
+3) After the return address, insert some NOPs instruction (if we follow the 4.2 method)
+4) For abling the execution of exploit execution from differents paths (env var PWD are diff so stack are not aligned) is possible to:
+	- 1) use env -i for dissable the env
+	- 2) Put some NOP (0x90) opcodes in the shell-code start address and then the shell code
+5) Insert the payload after the NOP opcodes (if we follow the 4.2 method) or else insert the shellcode where esp points (if we don't follow 4.2)
+6) Just launch and we have full control of the systhem
+
+Notes: 
+
+1) IS VERY USEFULL THE BEFORE TEST THE SHELLCODE TRY WITH SOME INT 3 (0xce) OPCODES (breakpoint) to test if the injection works
+2) Is better to find shell code in internet (just search for a execve("/bin/bash", 0, 0))
+3) VERY IMPORTANT: launch the exploit like that (if the shellcode uses execve): >$ (python script ; cat) | ./stack5
+
+
+Script: 
+
+# lets say 0xffffff is the esp value in the ret opcode
+
+import struct
+
+padding = "A"*64		# probally 68 if i count ebp
+stack_target = struct.pack("I", 0xffffff + 35) 		# 35 is added to be sure to allign the stack (just moves it in the middle of the NOPs) (could be any number ...)
+nops_slide = "\0x90"*100
+payload = "" # here just the SHELLCODE
+
+print padding+stack_target+nops_slide+payload
+
