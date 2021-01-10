@@ -1,0 +1,28 @@
+
+This the first level on heap explotation, this level is an introduction and does not
+atack the heap algorithm (malloc algorithm) but its interesting too.
+
+First off all the structure of the heap is the following (what is needed to know for this exploit):
+1) Before each new allocation there are metadata:
+	- 4 bytes null
+	- 4 bytes with the size of the current mem block allocated (this size & 1 is true if is currently allocated)
+2) Then after the metadata thera are the avalaible mem block required by the user
+
+For exemple for a malloc(8):
+[ metadata:NULL ][ size:0x11 ][ avalaible mem ][ avalaible mem ] // total size = 0x10 (16) and the size & 1 is true
+
+This exploit is very easy cause strcpy does the job. The path of succes is:
+1) Find the function winner address
+2) Find the GOT address of puts in the libc
+3) Overflow the first buffer "name" until overwrite the address of the second buffer name with the address of the puts GOT. So,
+	the size to overwrite must be: 8 bytes from the first name + 8 bytes of the second struct metadata + 4 bytes of the second struct int arg
+	+ 4 bytes of the address of name in the second struct (this is the target)
+4) Put as second parameter the address of winner and structure will do all the rest!
+
+my script:
+
+./heap1 "$(echo -en "AAAABBBBCCCCDDDDEEEE\x74\x97\x04\x08")" "$(echo -en "\x94\x84\x04\x08")"
+
+// 0x8049774 is the address of puts GOT
+// 0x8048494 is the address of the fucntion winner
+// There are little endian on the systhem and the systhem is 32bits
