@@ -1,0 +1,21 @@
+This level is an introduction to heap explotation. The goal is to understant the security
+fail while not setting to NULL a freed variable.
+
+When a value is freed, the address after the size takes the value of the address of
+the previous freed chunk. If there are not previous to NULL. Just that!
+
+So, what it means? If a value is freed and not set to NULL new blocks
+can be allocated in the same address where the value was. The value
+still pointing to that address and can be modied by other allocations. (Use-after-free).
+
+How to solve ?
+
+1) Allocated an "auth": $> auth asd
+2) Free the auth: $> reset
+3) Allocated a service $> service AAA		
+4) Repeat 3 multiples times until allocate in the address pointed by auth
+5) Login: $> login
+
+The heap algorithm will never overlap allocated blocks but once the block is freed
+for optimization reasons it will use the free space to allocate new blocks. If a freed value
+is never set to NULL it can cause serious security issues.
