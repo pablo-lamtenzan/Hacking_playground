@@ -1,0 +1,20 @@
+The objective is to modify a variable using a string format, printf and other format string function has a vulnerabillity: the %n
+
+In this example the machine is 32bits so the function parameters are pushed in the stack before a function call, that means 
+is possible to write some address in the stack and modify it with %n with a bad securized printf. Furthermore, is very
+useful to use %p or %x to leaks addresses in the stack. So, the idea is to find the right alignment for the address who will be modified with %n.
+
+1) Find the address of the target value (in this case is global so is in the .bss section)
+	I ve used objdump -t to find it.
+2) Calculate the padding (i ve backtracked it manually) and fill it
+3) Write the address on the stack (argv is written in the stack)
+4) Print %x or %p to leak addresses and find the right alignment
+5) When the address to modify is the last leaked address just add %n
+6) End!
+
+My script
+
+./format0 "$(python -c 'print "AAAA"+"\x38\x96\x04\x08"+"BB"+"%x "*128+"%n"')"
+
+For the momment i don't know if i can solve this more easelly, "AAAA" and "BB" were backtracked to find the right alignment
+
